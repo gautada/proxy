@@ -1,2 +1,0 @@
-# proxy
-Proxy Container
