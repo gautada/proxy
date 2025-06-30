@@ -52,19 +52,19 @@ jobs:
         # There must be a line at the end of the .env file
         run: | 
           /usr/bin/podman build \
-           --arch amd64 \
-           --build-arg-file .arg \
-           --file Containerfile \
-           --no-cache \
-           --tag "${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-amd64" \
-           .
-          /usr/bin/podman build \
            --arch aarch64 \
            --build-arg-file .arg \
            --file Containerfile \
            --no-cache \
            --tag "${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-aarch64" \
            . 
+          /usr/bin/podman build \
+           --arch amd64 \
+           --build-arg-file .arg \
+           --file Containerfile \
+           --no-cache \
+           --tag "${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-amd64" \
+           .
           /usr/bin/podman images
 
       - name: "Push `dev` image to registry"
@@ -74,10 +74,23 @@ jobs:
           IMG="$P_IMG/$S_IMG"
           /usr/bin/podman tag "$S_IMG" "$IMG"
           /usr/bin/podman push "$IMG"
-          S_IMG="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-aarchd64"
+          S_IMG="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-aarch64"
           IMG="$P_IMG/$S_IMG"
           /usr/bin/podman tag "$S_IMG" "$IMG"
           /usr/bin/podman push "$IMG"
+
+      - name: "Create and Push Multi-Arch Manifest"
+        run: |
+          P_IMG="docker.io/${{ secrets.DOCKERIO_REGISTRY }}"
+          IMG_NAME="${{ env.IMAGE_NAME }}"
+          TAG="${{ env.IMAGE_TAG_DEV }}"
+          # Create manifest list
+          /usr/bin/podman manifest create "$IMG_NAME:$TAG"
+          # Add individual architecture images to manifest
+          /usr/bin/podman manifest add "$IMG_NAME:$TAG" "docker.io/$P_IMG/$IMG_NAME:$TAG-amd64"
+          /usr/bin/podman manifest add "$IMG_NAME:$TAG" "docker.io/$P_IMG/$IMG_NAME:$TAG-aarch64"
+          # Push the manifest list
+          /usr/bin/podman manifest push "$IMG_NAME:$TAG" "docker://$P_IMG/$IMG_NAME:$TAG"
 
       - name: "Push `latest` & <IMAGE_VERSION> to registry"
         if: github.event_name == 'pull_request' && github.base_ref == 'main'
