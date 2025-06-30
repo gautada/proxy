@@ -80,6 +80,14 @@ jobs:
           /usr/bin/podman tag "$S_IMG" "$IMG"
           /usr/bin/podman push "$IMG"
 
+      - name: "Push `dev-aarch64` image to registry"
+        run: |
+          S_IMG="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_DEV }}-aarch64"
+          P_IMG="docker.io/${{ secrets.DOCKERIO_REGISTRY }}"
+          IMG="$P_IMG/$S_IMG"
+          /usr/bin/podman tag "$S_IMG" "$IMG"
+          /usr/bin/podman push "$IMG"
+
       - name: "Push `latest` & <IMAGE_VERSION> to registry"
         if: github.event_name == 'pull_request' && github.base_ref == 'main'
         run: |
