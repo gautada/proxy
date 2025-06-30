@@ -32,6 +32,9 @@ jobs:
           while IFS='=' read -r key value; do
           echo "$key=$value" >> "$GITHUB_ENV"
           done < .arg
+          # Overload IMAGE_TAG_DEV
+          TAG=$(echo "${GITHUB_REF_NAME}" | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_TAG_DEV=$TAG" >> "$GITHUB_ENV"
 
       - name: "Set up packages"
         # QEMU for aarch64 (using emulation)
