@@ -89,9 +89,11 @@ jobs:
           # Add individual architecture images to manifest
           /usr/bin/podman manifest add "$IMG_NAME:$TAG" "$P_IMG/$IMG_NAME:$TAG-amd64"
           /usr/bin/podman manifest add "$IMG_NAME:$TAG" "$P_IMG/$IMG_NAME:$TAG-aarch64"
-          # Push the manifest list
-          # /usr/bin/podman manifest push "$P_IMG/$IMG_NAME:$TAG"
+          /usr/bin/podman tag "$IMG_NAME:$TAG" "$P_IMG/$IMG_NAME:$TAG"
           /usr/bin/podman images
+          # Push the manifest list
+          /usr/bin/podman manifest push "$P_IMG/$IMG_NAME:$TAG"
+          
 
       - name: "Push `latest` & <IMAGE_VERSION> to registry"
         if: github.event_name == 'pull_request' && github.base_ref == 'main'
